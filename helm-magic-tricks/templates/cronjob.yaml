@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: patch-hostsubnets
+  namespace: <NS>
+spec:
+  concurrecnyPolicy: Forbid
+  suspend: false
+  schedule: "* */1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: patch-hostsubnets
+            image: <IMAGE>
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - oc get nodes --no-headers | awk '{print $1}' | xargs -n 1 -I {} oc patch hostsubnet {} --type=merge -p '{"egressIPs":[{{ join "," .Values.subnets | toString | quote }}]}'
+          restartPolicy: OnFailure
+          serviceAccountName: <SA> #privileged

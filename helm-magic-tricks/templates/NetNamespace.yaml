@@ -1,0 +1,2 @@
+{{ $root := . }}
+{{- include "EgressIPs.CreateNetNamespace" (list $root) }}
